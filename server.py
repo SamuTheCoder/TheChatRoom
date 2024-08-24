@@ -17,6 +17,7 @@ async def callback(websocket, path):
             broadcast_message = json.dumps({"username": username, "message": message})
             #Passing coroutine objects to asyncio.wait() is deprecated since Python 3.8
             await asyncio.gather(*[client.send(broadcast_message) for client in connected_clients])
+            print("Sent")
     except websockets.ConnectionClosed:
         print("Connection closed")
     finally:
