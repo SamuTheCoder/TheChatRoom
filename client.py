@@ -14,6 +14,7 @@ async def send_message(websocket, username):
             await websocket.send(packet)
         except Exception as e:
             print("Error: ", e)
+            break
         
 async def recv_message(websocket):
     while True:
@@ -23,12 +24,16 @@ async def recv_message(websocket):
         try:
             packet = await websocket.recv()
             response = json.loads(packet)
+            if "error" in response:
+                print(f"Error: {response['error']}")
+                break
             username = response.get("username")
             message = response.get("message")
             print(f"{username}: {message}")
         except Exception as e:
             print("Error: ", e)
-        
+            break
+          
 async def main(username):   
     uri = "ws://localhost:8765"
     
@@ -36,7 +41,12 @@ async def main(username):
         async with websockets.connect(uri) as client:
             send_task = asyncio.create_task(send_message(client, username))
             receive_task = asyncio.create_task(recv_message(client))
-            await asyncio.gather(send_task, receive_task)
+            
+            try:
+                await asyncio.gather(send_task, receive_task)
+            except:
+                send_task.cancel()
+                receive_task.cancel()
     except Exception as e:
         print("Megarip")
         return
